@@ -36,6 +36,3 @@ runs:
     ACTION_TAG_REF_BRANCH_PREFIX:  ${{ inputs.refBranchPrefix }}
     ACTION_TAG_SHA_PREFIX:         ${{ inputs.shaPrefix }}
     ACTION_TAG_SERIAL_PREFIX:      ${{ inputs.serialPrefix }}
-    ACTION_TAG_GITHUB_SHA:         ${{ github.sha }}
-    ACTION_TAG_GITHUB_REF:         ${{ github.ref }}
-    ACTION_TAG_GITHUB_RUN_NUMBER:  ${{ github.run_number }}

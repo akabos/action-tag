@@ -12,6 +12,11 @@ import (
 
 func init() {
 	viper.SetEnvPrefix("ACTION_TAG")
+	viper.AutomaticEnv()
+
+	_ = viper.BindEnv(optGithubSHA, "GITHUB_SHA")
+	_ = viper.BindEnv(optGithubRef, "GITHUB_REF")
+	_ = viper.BindEnv(optGithubRunNumber, "GITHUB_RUN_NUMBER")
 }
 
 const (
@@ -23,7 +28,6 @@ const (
 	optGithubRef       = "github_ref"
 	optGithubRunNumber = "github_run_number"
 )
-
 
 func FromRef(ref, branchPrefix, tagPrefix string) (string, error) {
 	switch {
