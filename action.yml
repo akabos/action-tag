@@ -1,0 +1,41 @@
+---
+name:        "Tag"
+description: "Generate Docker image tags from git commit metadata"
+branding:
+  color: "green"
+  icon:  "tag"
+inputs:
+  refTagPrefix:
+    description: "prefix for the tag generated from git tag ref"
+    required:    true
+    default:     "v"
+  refBranchPrefix:
+    description: "prefix for the tag generated from git branch ref"
+    required:    true
+    default:     ""
+  shaPrefix:
+    description: "prefix for the tag generated from git commit hash"
+    required:    true
+    default:     "sha-"
+  serialPrefix:
+    description: "prefix for the tag generated from workflow run number"
+    required:    true
+    default:     ""
+outputs:
+  ref:
+    description: "tag based on the commit ref"
+  sha:
+    description: "tag based on the commit hash"
+  serial:
+    description: "tag based on the workflow run number"
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    ACTION_TAG_REF_TAG_PREFIX:     ${{ inputs.refTagPrefix }}
+    ACTION_TAG_REF_BRANCH_PREFIX:  ${{ inputs.refBranchPrefix }}
+    ACTION_TAG_SHA_PREFIX:         ${{ inputs.shaPrefix }}
+    ACTION_TAG_SERIAL_PREFIX:      ${{ inputs.serialPrefix }}
+    ACTION_TAG_GITHUB_SHA:         ${{ github.sha }}
+    ACTION_TAG_GITHUB_REF:         ${{ github.ref }}
+    ACTION_TAG_GITHUB_RUN_NUMBER:  ${{ github.run_number }}
