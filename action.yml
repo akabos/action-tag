@@ -30,4 +30,4 @@ outputs:
     description: "tag based on the workflow run number"
 runs:
   using: "docker"
-  image: "docker://akabos/action-tag:v1.0.0"
+  image: "docker://akabos/action-tag:v1.0.1"
