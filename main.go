@@ -6,27 +6,8 @@ import (
 	"strings"
 
 	"github.com/gosimple/slug"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
-)
-
-func init() {
-	viper.SetEnvPrefix("ACTION_TAG")
-	viper.AutomaticEnv()
-
-	_ = viper.BindEnv(optGithubSHA, "GITHUB_SHA")
-	_ = viper.BindEnv(optGithubRef, "GITHUB_REF")
-	_ = viper.BindEnv(optGithubRunNumber, "GITHUB_RUN_NUMBER")
-}
-
-const (
-	optRefBranchPrefix = "ref_branch_prefix"
-	optRefTagPrefix    = "ref_tag_prefix"
-	optSHAPrefix       = "sha_prefix"
-	optSerialPrefix    = "serial_prefix"
-	optGithubSHA       = "github_sha"
-	optGithubRef       = "github_ref"
-	optGithubRunNumber = "github_run_number"
 )
 
 func FromRef(ref, branchPrefix, tagPrefix string) (string, error) {
@@ -69,24 +50,39 @@ func output(name, value string) {
 	_, _ = fmt.Fprintf(os.Stdout, "::set-output name=%s::%s\n", name, value)
 }
 
-func exit(e error) {
+func die(e error) {
 	_, _ = fmt.Fprintf(os.Stdout, "::error ::%s\n", e.Error())
 	os.Exit(-1)
 }
 
 func main() {
-	ref, err := FromRef(viper.GetString(optGithubRef), viper.GetString(optRefBranchPrefix), viper.GetString(optRefTagPrefix))
-	if err != nil {
-		exit(err)
+	var inputs struct {
+		RefTagPrefix    string `envconfig:"INPUT_REFTAGPREFIX"`
+		RefBranchPrefix string `envconfig:"INPUT_REFBRANCHPREFIX"`
+		SHAPrefix       string `envconfig:"INPUT_SHAPREFIX"`
+		SerialPrefix    string `envconfig:"INPUT_SERIALPREFIX"`
+
+		GithubRef       string `envconfig:"GITHUB_REF"`
+		GithubSHA       string `envconfig:"GITHUB_SHA"`
+		GithubRunNumber int    `envconfig:"GITHUB_RUN_NUMBER"`
 	}
-	sha, err := FromSHA(viper.GetString(optGithubSHA), viper.GetString(optSHAPrefix))
-	if err != nil {
-		exit(err)
+	if err := envconfig.Process("", &inputs); err != nil {
+		die(err)
 	}
-	serial, err := FromRunNumber(viper.GetInt(optGithubRunNumber), viper.GetString(optSerialPrefix))
+
+	ref, err := FromRef(inputs.GithubRef, inputs.RefBranchPrefix, inputs.RefTagPrefix)
 	if err != nil {
-		exit(err)
+		die(err)
 	}
+	sha, err := FromSHA(inputs.GithubSHA, inputs.SHAPrefix)
+	if err != nil {
+		die(err)
+	}
+	serial, err := FromRunNumber(inputs.GithubRunNumber, inputs.SerialPrefix)
+	if err != nil {
+		die(err)
+	}
+
 	output("ref", ref)
 	output("sha", sha)
 	output("serial", serial)

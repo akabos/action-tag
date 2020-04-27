@@ -3,7 +3,6 @@ package main
 import (
 	"testing"
 
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -61,7 +60,6 @@ func TestFromSHA(t *testing.T) {
 		require.Equal(t, "sha-8d5ef19", res)
 	})
 	t.Run("error", func(t *testing.T) {
-		viper.Reset()
 		_, err := FromSHA("", "")
 		require.Error(t, err)
 	})
@@ -79,7 +77,6 @@ func TestFromRunNumber(t *testing.T) {
 		require.Equal(t, "build-100500", res)
 	})
 	t.Run("error", func(t *testing.T) {
-		viper.Reset()
 		_, err := FromRunNumber(0, "")
 		require.Error(t, err)
 	})

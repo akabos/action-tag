@@ -20,7 +20,7 @@ inputs:
   serialPrefix:
     description: "prefix for the tag generated from workflow run number"
     required:    true
-    default:     ""
+    default:     "build-"
 outputs:
   ref:
     description: "tag based on the commit ref"
@@ -31,8 +31,3 @@ outputs:
 runs:
   using: "docker"
   image: "docker://akabos/action-tag:v1.0.0"
-  env:
-    ACTION_TAG_REF_TAG_PREFIX:     ${{ inputs.refTagPrefix }}
-    ACTION_TAG_REF_BRANCH_PREFIX:  ${{ inputs.refBranchPrefix }}
-    ACTION_TAG_SHA_PREFIX:         ${{ inputs.shaPrefix }}
-    ACTION_TAG_SERIAL_PREFIX:      ${{ inputs.serialPrefix }}
