@@ -30,7 +30,7 @@ outputs:
     description: "tag based on the workflow run number"
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "docker://akabos/action-tag:v1.0.0"
   env:
     ACTION_TAG_REF_TAG_PREFIX:     ${{ inputs.refTagPrefix }}
     ACTION_TAG_REF_BRANCH_PREFIX:  ${{ inputs.refBranchPrefix }}
