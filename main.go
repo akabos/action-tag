@@ -10,40 +10,61 @@ import (
 	"github.com/pkg/errors"
 )
 
-func FromRef(ref, branchPrefix, tagPrefix string) (string, error) {
+func FromRef(registry, repository, ref, branchPrefix, tagPrefix string) (string, error) {
 	switch {
 	case strings.HasPrefix(ref, "refs/heads/"):
-		return fromRefBranch(ref, branchPrefix)
+		return fromRefBranch(registry, repository, ref, branchPrefix)
 	case strings.HasPrefix(ref, "refs/tags/"):
-		return fromRefTag(ref, tagPrefix)
+		return fromRefTag(registry, repository, ref, tagPrefix)
 	default:
 		return "", errors.New("git ref is neither branch not tag")
 	}
 }
 
-func fromRefBranch(ref, prefix string) (string, error) {
+func fromRefBranch(registry, repository, ref, prefix string) (tag string, err error) {
 	ref = strings.TrimPrefix(ref, "refs/heads/")
-	return fmt.Sprintf("%s%s", prefix, slug.Make(ref)), nil
+	tag = fmt.Sprintf("%s%s", prefix, slug.Make(ref))
+	tag = prepend(registry, repository, tag)
+	return
 }
 
-func fromRefTag(ref, prefix string) (string, error) {
+func fromRefTag(registry, repository, ref, prefix string) (tag string, err error) {
 	ref = strings.TrimPrefix(ref, "refs/tags/")
 	ref = strings.TrimPrefix(ref, prefix)
-	return fmt.Sprintf("%s%s", prefix, ref), nil
+	tag = fmt.Sprintf("%s%s", prefix, ref)
+	tag = prepend(registry, repository, tag)
+	return
 }
 
-func FromSHA(sha, prefix string) (string, error) {
+func prepend(registry, repository, tag string) string {
+	registry = strings.TrimSuffix(registry, "/")
+	repository = strings.TrimSuffix(repository, "/")
+	switch {
+	case registry != "" && repository != "":
+		return fmt.Sprintf("%s/%s:%s", registry, repository, tag)
+	case repository != "":
+		return fmt.Sprintf("%s:%s", repository, tag)
+	default:
+		return tag
+	}
+}
+
+func FromSHA(registry, repository, sha, prefix string) (tag string, err error) {
 	if len(sha) != 40 {
 		return "", errors.Errorf("invalid value: commit sha: %q", sha)
 	}
-	return fmt.Sprintf("%s%.7s", prefix, sha), nil
+	tag = fmt.Sprintf("%s%.7s", prefix, sha)
+	tag = prepend(registry, repository, tag)
+	return
 }
 
-func FromRunNumber(n int, prefix string) (string, error) {
+func FromRunNumber(registry, repository string, n int, prefix string) (tag string, err error) {
 	if n == 0 {
 		return "", errors.Errorf("invalid value: run number: %q", n)
 	}
-	return fmt.Sprintf("%s%d", prefix, n), nil
+	tag = fmt.Sprintf("%s%d", prefix, n)
+	tag = prepend(registry, repository, tag)
+	return
 }
 
 func output(name, value string) {
@@ -57,6 +78,9 @@ func die(e error) {
 
 func main() {
 	var inputs struct {
+		Registry   string `envconfig:"INPUT_REGISTRY"`
+		Repository string `envconfig:"INPUT_REPOSITORY"`
+
 		RefTagPrefix    string `envconfig:"INPUT_REFTAGPREFIX"`
 		RefBranchPrefix string `envconfig:"INPUT_REFBRANCHPREFIX"`
 		SHAPrefix       string `envconfig:"INPUT_SHAPREFIX"`
@@ -70,15 +94,15 @@ func main() {
 		die(err)
 	}
 
-	ref, err := FromRef(inputs.GithubRef, inputs.RefBranchPrefix, inputs.RefTagPrefix)
+	ref, err := FromRef(inputs.Registry, inputs.Repository, inputs.GithubRef, inputs.RefBranchPrefix, inputs.RefTagPrefix)
 	if err != nil {
 		die(err)
 	}
-	sha, err := FromSHA(inputs.GithubSHA, inputs.SHAPrefix)
+	sha, err := FromSHA(inputs.Registry, inputs.Repository, inputs.GithubSHA, inputs.SHAPrefix)
 	if err != nil {
 		die(err)
 	}
-	serial, err := FromRunNumber(inputs.GithubRunNumber, inputs.SerialPrefix)
+	serial, err := FromRunNumber(inputs.Registry, inputs.Repository, inputs.GithubRunNumber, inputs.SerialPrefix)
 	if err != nil {
 		die(err)
 	}
