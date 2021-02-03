@@ -5,6 +5,14 @@ branding:
   color: "green"
   icon:  "tag"
 inputs:
+  registry:
+    description: "image registry for the tag (only meaningful if repository present as well)"
+    required:    true
+    default:     ""
+  repository:
+    description: "image repository for the tag"
+    required:    true
+    default:     ""
   refTagPrefix:
     description: "prefix for the tag generated from git tag ref"
     required:    true
@@ -30,4 +38,4 @@ outputs:
     description: "tag based on the workflow run number"
 runs:
   using: "docker"
-  image: "docker://akabos/action-tag:v1.0.1"
+  image: "docker://akabos/action-tag:v1.1.0"
